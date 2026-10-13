@@ -1,8 +1,8 @@
 {
   "Level": 3,
-  "Total_XP": 367,
-  "Last_Fed_Timestamp": "2026-10-13T20:17:22Z",
-  "Total_Devices_Eaten": 129,
+  "Total_XP": 450,
+  "Last_Fed_Timestamp": "2026-10-13T21:11:22Z",
+  "Total_Devices_Eaten": 184,
   "stage": 1,
   "stage_name": "Blob",
   "level_xp": 300,
@@ -13,11 +13,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 15,
-    "xp_gained": 30,
-    "combo": 2
+    "new_devices": 8,
+    "xp_gained": 12,
+    "combo": 1.5
   },
-  "forage_cycles": 7,
-  "battery": 100,
-  "synced_at": "2026-10-13T20:17:22Z"
+  "forage_cycles": 13,
+  "battery": 99,
+  "synced_at": "2026-10-13T21:11:22Z"
 }
