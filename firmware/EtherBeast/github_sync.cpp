@@ -40,7 +40,9 @@ String buildStatePayload(const GameState& s, uint8_t face, uint8_t battery) {
   JsonDocument doc;
   doc["Level"] = s.level;
   doc["Total_XP"] = s.totalXp;
-  if (s.lastFedEpoch) doc["Last_Fed_Timestamp"] = isoTime(s.lastFedEpoch);
+  // Fed this cycle before NTP had set the clock: "now" is within a minute.
+  uint32_t fed = s.lastFedEpoch ? s.lastFedEpoch : (s.lastNewDevices ? nowEpoch() : 0);
+  if (fed) doc["Last_Fed_Timestamp"] = isoTime(fed);
   else doc["Last_Fed_Timestamp"] = nullptr;
   doc["Total_Devices_Eaten"] = s.devicesEaten;
 

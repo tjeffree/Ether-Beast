@@ -36,8 +36,8 @@ The CoreInk is fully **powered off** between forages; the RTC alarm turns it bac
 - **Top button** (while awake, when "PRESS TOP BTN" shows): evolve.
 - **Wheel press** (while awake): forage right now instead of waiting.
 
-On USB power it can't fully power off, so it sleeps and restarts instead. Use the reset
-button to wake it.
+On USB power it can't fully power off, so it light-sleeps instead. The side button
+still wakes it.
 
 ## Building
 

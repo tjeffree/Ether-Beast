@@ -22,6 +22,9 @@
 #include "github_sync.h"
 #include "ui.h"
 
+static const gpio_num_t POWER_HOLD_PIN   = GPIO_NUM_12;  // high keeps the CoreInk powered
+static const gpio_num_t POWER_BUTTON_PIN = GPIO_NUM_27;  // side button, active low
+
 static GameState    state;
 static SeenFilter   seen;
 static ForageResult foraged;
@@ -115,6 +118,7 @@ static void forageCycle() {
       state.cyclesSinceSync = 0;
       state.forceSync = 0;
       state.lastSyncOk = 1;
+      if (newDevices && !state.lastFedEpoch) state.lastFedEpoch = nowEpoch();  // clock now set
       Serial.println("Synced to GitHub");
     } else {
       state.lastSyncOk = 2;
@@ -166,23 +170,48 @@ static void buttonWake() {
   }
 }
 
+// Survives esp_restart(): tells the next boot why the USB-powered sleep ended.
+enum : uint32_t { WAKE_HINT_NONE = 0, WAKE_HINT_TIMER = 0x7133E701, WAKE_HINT_BUTTON = 0x7133E702 };
+RTC_NOINIT_ATTR static uint32_t wakeHint;
+
 static void sleepUntilNextForage() {
   stateSave(state);
   Serial.printf("Sleeping %us\n", FORAGE_INTERVAL_SEC);
   Serial.flush();
-  // On battery this powers the CoreInk off; the RTC alarm powers it back on.
-  // On USB it light-sleeps and restarts instead.
-  M5.Power.timerSleep(FORAGE_INTERVAL_SEC);
+
+  M5.Rtc.disableIRQ();
+  M5.Rtc.clearIRQ();
+  M5.Rtc.setAlarmIRQ(FORAGE_INTERVAL_SEC);
+  M5.Display.sleep();
+  M5.Display.waitDisplay();
+
+  // On battery, releasing the power-hold line switches the CoreInk off and the
+  // RTC alarm switches it back on.
+  digitalWrite(POWER_HOLD_PIN, LOW);
+  delay(200);
+
+  // Still running, so USB is powering us: light-sleep until the timer or the
+  // side power button, then restart to begin a fresh cycle.
+  esp_sleep_enable_timer_wakeup((uint64_t)FORAGE_INTERVAL_SEC * 1000000ULL);
+  gpio_wakeup_enable(POWER_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+  esp_sleep_enable_gpio_wakeup();
+  esp_light_sleep_start();
+  wakeHint = esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER ? WAKE_HINT_TIMER
+                                                                     : WAKE_HINT_BUTTON;
+  esp_restart();
 }
 
 void setup() {
   auto cfg = M5.config();
   cfg.clear_display = false;    // the e-ink keeps the last frame; don't flash it white
   cfg.disable_rtc_irq = false;  // we need the alarm flag to know why we woke
+  cfg.serial_baudrate = 115200;
   M5.begin(cfg);
 
-  // RTC alarm => scheduled forage. On USB, timerSleep() ends in esp_restart().
-  bool timerWake = M5.Rtc.getIRQstatus() || esp_reset_reason() == ESP_RST_SW;
+  // Battery: the RTC alarm powered us on. USB: the light sleep ended on its timer.
+  bool restarted = esp_reset_reason() == ESP_RST_SW;
+  bool timerWake = restarted ? wakeHint == WAKE_HINT_TIMER : M5.Rtc.getIRQstatus();
+  wakeHint = WAKE_HINT_NONE;
   M5.Rtc.disableIRQ();
   M5.Rtc.clearIRQ();
 
