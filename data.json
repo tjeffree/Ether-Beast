@@ -1,23 +1,23 @@
 {
   "Level": 1,
-  "Total_XP": 0,
+  "Total_XP": 204,
   "Last_Fed_Timestamp": null,
-  "Total_Devices_Eaten": 0,
+  "Total_Devices_Eaten": 45,
   "stage": 0,
   "stage_name": "Egg",
   "level_xp": 0,
   "next_level_xp": 100,
-  "ready_to_evolve": false,
-  "mood": "content",
-  "face": 0,
-  "sugar_rush": false,
+  "ready_to_evolve": true,
+  "mood": "sugar_rush",
+  "face": 3,
+  "sugar_rush": true,
   "starving": false,
   "last_forage": {
-    "new_devices": 0,
-    "xp_gained": 0,
-    "combo": 1
+    "new_devices": 45,
+    "xp_gained": 204,
+    "combo": 3
   },
-  "forage_cycles": 0,
-  "battery": null,
-  "synced_at": null
+  "forage_cycles": 1,
+  "battery": 100,
+  "synced_at": "2026-10-13T19:06:06Z"
 }
