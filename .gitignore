@@ -1,0 +1,7 @@
+# Secrets - never commit
+.env
+.env.*
+firmware/EtherBeast/secrets.h
+
+# Build output
+build/
