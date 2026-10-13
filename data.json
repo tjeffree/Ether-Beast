@@ -1,23 +1,23 @@
 {
-  "Level": 2,
-  "Total_XP": 244,
-  "Last_Fed_Timestamp": "2026-10-13T19:27:22Z",
-  "Total_Devices_Eaten": 63,
+  "Level": 3,
+  "Total_XP": 367,
+  "Last_Fed_Timestamp": "2026-10-13T20:17:22Z",
+  "Total_Devices_Eaten": 129,
   "stage": 1,
   "stage_name": "Blob",
-  "level_xp": 100,
-  "next_level_xp": 300,
+  "level_xp": 300,
+  "next_level_xp": 600,
   "ready_to_evolve": false,
-  "mood": "sugar_rush",
-  "face": 3,
-  "sugar_rush": true,
+  "mood": "feeding",
+  "face": 1,
+  "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 18,
-    "xp_gained": 40,
+    "new_devices": 15,
+    "xp_gained": 30,
     "combo": 2
   },
-  "forage_cycles": 2,
+  "forage_cycles": 7,
   "battery": 100,
-  "synced_at": "2026-10-13T19:27:22Z"
+  "synced_at": "2026-10-13T20:17:22Z"
 }
