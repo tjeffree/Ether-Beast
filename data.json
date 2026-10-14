@@ -1,23 +1,23 @@
 {
-  "Level": 4,
-  "Total_XP": 1151,
-  "Last_Fed_Timestamp": "2026-10-14T05:59:22Z",
-  "Total_Devices_Eaten": 661,
+  "Level": 5,
+  "Total_XP": 1201,
+  "Last_Fed_Timestamp": "2026-10-14T06:10:22Z",
+  "Total_Devices_Eaten": 679,
   "stage": 2,
   "stage_name": "Imp",
-  "level_xp": 600,
-  "next_level_xp": 1000,
-  "ready_to_evolve": true,
+  "level_xp": 1000,
+  "next_level_xp": 1500,
+  "ready_to_evolve": false,
   "mood": "feeding",
   "face": 1,
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 9,
-    "xp_gained": 13,
-    "combo": 1.5
+    "new_devices": 18,
+    "xp_gained": 50,
+    "combo": 2
   },
-  "forage_cycles": 71,
+  "forage_cycles": 72,
   "battery": 88,
-  "synced_at": "2026-10-14T05:59:22Z"
+  "synced_at": "2026-10-14T06:10:22Z"
 }
