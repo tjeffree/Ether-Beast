@@ -1,8 +1,8 @@
 {
   "Level": 3,
-  "Total_XP": 759,
-  "Last_Fed_Timestamp": "2026-10-14T00:47:22Z",
-  "Total_Devices_Eaten": 393,
+  "Total_XP": 826,
+  "Last_Fed_Timestamp": "2026-10-14T01:41:22Z",
+  "Total_Devices_Eaten": 439,
   "stage": 1,
   "stage_name": "Blob",
   "level_xp": 300,
@@ -17,7 +17,7 @@
     "xp_gained": 13,
     "combo": 1.5
   },
-  "forage_cycles": 37,
-  "battery": 94,
-  "synced_at": "2026-10-14T00:47:22Z"
+  "forage_cycles": 43,
+  "battery": 91,
+  "synced_at": "2026-10-14T01:41:22Z"
 }
