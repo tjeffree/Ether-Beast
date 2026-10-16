@@ -1,6 +1,7 @@
 #include "github_sync.h"
 #include "config.h"
 #include "certs.h"
+#include "forage.h"
 #include "secrets.h"
 #include <M5Unified.h>
 #include <WiFi.h>
@@ -46,9 +47,22 @@ String buildStatePayload(const GameState& s, uint8_t face, uint8_t battery) {
   else doc["Last_Fed_Timestamp"] = nullptr;
   doc["Total_Devices_Eaten"] = s.devicesEaten;
 
-  uint8_t stage = stageForLevel(s.level);
-  doc["stage"] = stage;
-  doc["stage_name"] = stageName(stage);
+  uint8_t form = displayForm(s);
+  doc["form"] = formKey(form);
+  doc["form_name"] = formName(form);
+  doc["sprite"] = spriteFor(s);
+  if (form != s.form) doc["usual_form_name"] = formName(s.form);  // under Null Byte / Faraday Ghost
+  uint8_t tier = tierForLevel(s.level);
+  doc["tier"] = tier;
+  JsonArray path = doc["path"].to<JsonArray>();
+  for (uint8_t t = 0; t <= tier; t++) path.add(formName(s.path[t]));
+  JsonObject diet = doc["diet"].to<JsonObject>();
+  diet["wifi_ap"] = s.eatenByKind[KIND_WIFI_AP];
+  diet["wifi_client"] = s.eatenByKind[KIND_WIFI_CLIENT];
+  diet["ble"] = s.eatenByKind[KIND_BLE_OTHER];
+  diet["wearable"] = s.eatenByKind[KIND_BLE_WEARABLE];
+  doc["scars"] = s.digestions;
+  doc["frenzies"] = s.frenzies;
   doc["level_xp"] = xpForLevel(s.level);
   doc["next_level_xp"] = xpForLevel(s.level + 1);
   doc["ready_to_evolve"] = (bool)s.readyToEvolve;

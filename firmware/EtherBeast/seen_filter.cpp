@@ -89,7 +89,11 @@ bool SeenFilter::eat(uint64_t hash) {
 
 bool SeenFilter::digestIfFull() {
   if (_count < SEEN_FILTER_CAPACITY) return false;
+  clear();
+  return true;
+}
+
+void SeenFilter::clear() {
   memset(_bits, 0, sizeof(_bits));
   _count = 0;
-  return true;
 }

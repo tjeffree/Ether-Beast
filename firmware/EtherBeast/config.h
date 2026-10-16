@@ -25,7 +25,25 @@
 #define LEVEL_XP_STEP           50
 
 #define STARVING_AFTER_SEC      (24UL * 3600UL)
+#define NULL_BYTE_AFTER_SEC     (72UL * 3600UL)  // devolves into a Null Byte until fed again
 #define SUGAR_RUSH_SEC          3600UL
+
+// ---- Evolution -----------------------------------------------------------
+// Forms change at these levels; the branch taken depends on what the beast ate
+// while in its previous form (see chooseForm in game_state.cpp).
+#define TIER2_LEVEL             5       // diet:        Beacon Imp / Blue Gremlin / Pulse Leech
+#define TIER3_LEVEL             10      // lifestyle:   Packet Hound / Router Golem / Static Moth
+#define TIER4_LEVEL             17      // temperament: Mesh Hydra / Firewall Drake / Hollow Wraith
+#define TIER5_LEVEL             25      // final:       Ether Wyrm / Promiscuous One
+#define DIET_WEARABLE_PCT       8       // share of wearables that makes a Pulse Leech
+#define NIGHT_FEEDER_PCT        25      // share eaten 00:00-05:59 that makes a Static Moth
+#define NIGHT_END_HOUR          6
+#define ROAMER_PCT              50      // share eaten away from home that makes a Packet Hound
+#define HYDRA_FRENZIES          10      // frenzies in the previous form that make a Mesh Hydra
+#define HYDRA_HEAD_FRENZIES     10      // ...and each further 10 as a Hydra grows a head (max 3)
+#define FARADAY_SILENT_FORAGES  50      // forages in a row hearing nothing at all
+#define LOCAL_TZ                "GMT0BST,M3.5.0/1,M10.5.0"  // for "night"; the RTC keeps UTC
+#define MAX_SCARS               10      // filter clears shown as marks beside the beast
 
 // ---- Seen-device memory (salted hashes in a Bloom filter, NVS) -------------
 #define SEEN_FILTER_BYTES       4096    // 32768 bits

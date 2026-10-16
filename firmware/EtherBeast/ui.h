@@ -17,7 +17,10 @@ struct RenderModel {
   uint32_t devicesEaten;
   uint16_t level;
   uint16_t lastXpGain;
-  uint8_t  stage;
+  uint8_t  form;       // shown in the header
+  uint8_t  sprite;     // body art (Hydra head count, Null Byte...)
+  uint8_t  teaser;     // next form's sprite while it is ready to evolve into it, or NO_SPRITE
+  uint8_t  scars;      // seen-filter clears survived
   uint8_t  face;
   uint8_t  comboX10;
   uint8_t  battery;

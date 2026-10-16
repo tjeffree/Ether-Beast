@@ -12,7 +12,7 @@
     return Math.round(s / 86400) + ' days ago';
   }
 
-  function drawMonster(stage, face) {
+  function drawMonster(sprite, face) {
     const canvas = $('monster');
     const ctx = canvas.getContext('2d');
     const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
@@ -23,17 +23,63 @@
     const plot = (rows, ox, oy) => rows.forEach((row, y) => {
       for (let x = 0; x < row.length; x++) if (row[x] === '#') ctx.fillRect(ox + x, oy + y, 1, 1);
     });
-    plot(sprites.bodies[Math.min(stage, sprites.bodies.length - 1)], 0, 0);
+    plot(sprites.bodies[sprite] || sprites.bodies[0], 0, 0);
     if (sprites.faces[face]) plot(sprites.faces[face], FACE_X, FACE_Y);
   }
 
+  const KINDS = [
+    { key: 'wifi_ap', cls: 'k-ap', label: 'Wi-Fi access points' },
+    { key: 'ble', cls: 'k-ble', label: 'Bluetooth' },
+    { key: 'wifi_client', cls: 'k-client', label: 'Phones/laptops (Wi-Fi)' },
+    { key: 'wearable', cls: 'k-wearable', label: 'Wearables' },
+  ];
+
+  function renderDiet(diet) {
+    const bar = $('dietbar'), legend = $('legend');
+    bar.replaceChildren(); legend.replaceChildren();
+    const total = KINDS.reduce((n, k) => n + (diet[k.key] || 0), 0);
+    const parts = [];
+    for (const k of KINDS) {
+      const n = diet[k.key] || 0;
+      const pct = total ? Math.round((n / total) * 100) : 0;
+      const li = document.createElement('li');
+      const sw = document.createElement('i'); sw.className = k.cls;
+      const tx = document.createElement('span');
+      tx.textContent = `${k.label} ${n.toLocaleString()} (${pct}%)`;
+      li.append(sw, tx); legend.append(li);
+      parts.push(`${k.label} ${pct}%`);
+      if (!n) continue;
+      const seg = document.createElement('div');
+      seg.className = k.cls; seg.style.flex = String(n);
+      seg.title = `${k.label}: ${n.toLocaleString()} (${pct}%)`;
+      bar.append(seg);
+    }
+    if (!total) {
+      const e = document.createElement('div'); e.className = 'empty'; bar.append(e);
+    }
+    bar.setAttribute('aria-label', total ? 'Diet: ' + parts.join(', ') : 'Diet: nothing eaten yet');
+  }
+
   function render(d) {
-    $('level').textContent = `LV${d.Level} ${d.stage_name || ''}`;
+    $('level').textContent = `LV${d.Level} ${d.form_name || ''}`;
     $('ready').classList.toggle('hidden', !d.ready_to_evolve);
     $('sugar').classList.toggle('hidden', !d.sugar_rush);
     $('starving').classList.toggle('hidden', !d.starving);
 
-    drawMonster(d.stage || 0, d.face || 0);
+    drawMonster(d.sprite || 0, d.face || 0);
+    const cond = $('condition');
+    cond.classList.toggle('hidden', !d.usual_form_name);
+    cond.textContent = d.usual_form_name ? `Usually a ${d.usual_form_name}. Feed it to bring it back.` : '';
+    const path = $('path');
+    path.replaceChildren();
+    (d.path || []).forEach((name, i, all) => {
+      if (i) path.append(' → ');
+      const el = document.createElement(i === all.length - 1 ? 'b' : 'span');
+      el.textContent = name; path.append(el);
+    });
+    renderDiet(d.diet || {});
+    $('frenzies').textContent = (d.frenzies || 0).toLocaleString();
+    $('scars').textContent = (d.scars || 0).toLocaleString();
 
     const floor = d.level_xp || 0;
     const next = d.next_level_xp || 1;

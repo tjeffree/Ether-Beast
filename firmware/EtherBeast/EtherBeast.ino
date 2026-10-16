@@ -65,8 +65,9 @@ static void forageCycle() {
   uint32_t t0 = millis();
   forageBle(foraged);
   forageWifi(foraged, HOME_SSID);
-  Serial.printf("Foraged %u unique devices in %lus, home %s\n", foraged.count,
-                (unsigned long)((millis() - t0) / 1000), foraged.homeSeen ? "yes" : "no");
+  Serial.printf("Foraged %u unique devices in %lus (%u rotating-address frames skipped), home %s\n",
+                foraged.count, (unsigned long)((millis() - t0) / 1000), foraged.rotatingSkipped,
+                foraged.homeSeen ? "yes" : "no");
 
   seen.load();
   if (seen.digestIfFull()) state.digestions++;
@@ -74,9 +75,11 @@ static void forageCycle() {
   // Pass 1: base XP for devices never eaten before.
   uint32_t baseXp = 0;
   uint16_t newDevices = 0;
+  uint16_t newByKind[4] = {};
   for (uint16_t i = 0; i < foraged.count; i++) {
     if (seen.eat(foraged.items[i].hash)) {
       newDevices++;
+      newByKind[foraged.items[i].kind]++;
       baseXp += xpForKind(foraged.items[i].kind);
     }
   }
@@ -85,6 +88,25 @@ static void forageCycle() {
   // Pass 2: swarm multiplier on the whole cycle's XP.
   float mult = comboMultiplier(newDevices);
   uint32_t gain = (uint32_t)(baseXp * mult);
+
+  // Diet and habits, which decide the next form.
+  bool wasStarving = isStarving(state);
+  int hour = localHour();
+  for (uint8_t k = 0; k < 4; k++) {
+    state.eatenByKind[k] += newByKind[k];
+    state.tierEatenByKind[k] += newByKind[k];
+  }
+  if (!foraged.homeSeen) state.tierEatenAway += newDevices;
+  if (hour >= 0 && hour < NIGHT_END_HOUR) state.tierEatenAtNight += newDevices;
+  if (newDevices && wasStarving && state.tierRecoveries < 255) state.tierRecoveries++;
+  if (mult >= 3.0f) {
+    state.frenzies++;
+    state.tierFrenzies++;
+    if (newByKind[0] && newByKind[1] && newByKind[2] && newByKind[3]) state.secretUnlocked = 1;
+  }
+  bool heardNothing = foraged.count == 0 && foraged.rotatingSkipped == 0;
+  if (!heardNothing) state.silentStreak = 0;
+  else if (state.silentStreak < UINT16_MAX) state.silentStreak++;
 
   state.cycles++;
   state.cyclesSinceSync++;
@@ -105,9 +127,12 @@ static void forageCycle() {
     state.sugarCyclesLeft--;
   }
   checkEvolveReady(state);
-  Serial.printf("New %u, base XP %lu x%.1f = +%lu, total %lu, level %u%s\n", newDevices,
-                (unsigned long)baseXp, mult, (unsigned long)gain, (unsigned long)state.totalXp,
-                state.level, state.readyToEvolve ? " (ready to evolve)" : "");
+  Serial.printf("New %u (AP %u, probe %u, BLE %u, wearable %u), base XP %lu x%.1f = +%lu, "
+                "total %lu, level %u %s%s\n", newDevices, newByKind[KIND_WIFI_AP],
+                newByKind[KIND_WIFI_CLIENT], newByKind[KIND_BLE_OTHER],
+                newByKind[KIND_BLE_WEARABLE], (unsigned long)baseXp, mult, (unsigned long)gain,
+                (unsigned long)state.totalXp, state.level, formName(displayForm(state)),
+                state.readyToEvolve ? " (ready to evolve)" : "");
 
   // Home: upload at most hourly, or straight away after a level-up.
   bool syncDue = state.forceSync ||
@@ -139,10 +164,11 @@ static void forageCycle() {
 static void evolve() {
   RenderModel before = onScreen;
   state.level++;
+  enterLevel(state);
   state.forceSync = 1;
   checkEvolveReady(state);
   RenderModel after = uiModelFrom(state, FACE_HAPPY, STATUS_EVOLVED, batteryLevel());
-  Serial.printf("Evolved to level %u (%s)\n", state.level, stageName(after.stage));
+  Serial.printf("Evolved to level %u (%s)\n", state.level, formName(after.form));
   uiEvolve(before, after);
   state.displayCount++;
   onScreen = after;
@@ -223,6 +249,10 @@ void setup() {
                 state.level, (unsigned long)state.totalXp);
 
   if (!existing) {
+    // Fresh egg (first run, or the saved state's format changed): forget every
+    // device the previous beast ate so the new one starts hungry.
+    seen.clear();
+    seen.save();
     show(uiModelFrom(state, FACE_NORMAL, STATUS_HATCHED, batteryLevel()), true);
   } else if (timerWake) {
     forageCycle();

@@ -18,6 +18,7 @@ public:
   bool eat(uint64_t hash);
   // Clears the filter once it is too full to be accurate. Returns true if cleared.
   bool digestIfFull();
+  void clear();
   uint32_t count() const { return _count; }
 
 private:

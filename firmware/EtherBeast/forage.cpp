@@ -21,6 +21,12 @@ uint8_t xpForKind(uint8_t kind) {
   }
 }
 
+static void skipRotating() {
+  portENTER_CRITICAL(&g_mux);
+  g_result->rotatingSkipped++;
+  portEXIT_CRITICAL(&g_mux);
+}
+
 // Records a device for this forage. Called from the Wi-Fi task and BLE callback.
 static void addSighting(const uint8_t addr[6], uint8_t kind) {
   uint64_t h = hashAddress(addr);
@@ -74,8 +80,16 @@ static bool isWearable(BLEAdvertisedDevice& d) {
 class AdvertCallbacks : public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice d) override {
     BLEAddress addr = d.getAddress();
-    addSighting(reinterpret_cast<const uint8_t*>(addr.getNative()),
-                isWearable(d) ? KIND_BLE_WEARABLE : KIND_BLE_OTHER);
+    const uint8_t* a = reinterpret_cast<const uint8_t*>(addr.getNative());
+    // Phones, watches, earbuds and TVs advertise from private random addresses
+    // (top two bits 00 or 01) that change every few minutes, so the same device
+    // would be eaten again and again. Only public and static random (11)
+    // addresses identify a device for longer than that.
+    if (d.getAddressType() != BLE_ADDR_TYPE_PUBLIC && (a[0] & 0xC0) != 0xC0) {
+      skipRotating();
+      return;
+    }
+    addSighting(a, isWearable(d) ? KIND_BLE_WEARABLE : KIND_BLE_OTHER);
   }
 };
 
@@ -113,6 +127,12 @@ static void onWifiFrame(void* buf, wifi_promiscuous_pkt_type_t type) {
   const uint8_t* transmitter = f + 10;
 
   if (subtype == SUBTYPE_PROBE_REQ) {
+    // Locally administered bit set: a randomised MAC that phones change per
+    // scan or per network, so it can't be told apart from a new device.
+    if (transmitter[0] & 0x02) {
+      skipRotating();
+      return;
+    }
     addSighting(transmitter, KIND_WIFI_CLIENT);
   } else if (subtype == SUBTYPE_BEACON) {
     addSighting(transmitter, KIND_WIFI_AP);

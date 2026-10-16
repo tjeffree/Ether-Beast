@@ -12,6 +12,7 @@ struct Sighting {
 struct ForageResult {
   Sighting items[MAX_SIGHTINGS];
   uint16_t count;
+  uint16_t rotatingSkipped;  // adverts/probes from short-lived random addresses
   bool     homeSeen;
 };
 

@@ -20,7 +20,10 @@ RenderModel uiModelFrom(const GameState& s, uint8_t face, uint8_t status, uint8_
   m.devicesEaten = s.devicesEaten;
   m.level = s.level;
   m.lastXpGain = s.lastXpGain;
-  m.stage = stageForLevel(s.level);
+  m.form = displayForm(s);
+  m.sprite = spriteFor(s);
+  m.teaser = teaserSprite(s);
+  m.scars = s.digestions < MAX_SCARS ? s.digestions : MAX_SCARS;
   m.face = face;
   m.comboX10 = s.lastComboX10;
   m.battery = (battery / 5) * 5;  // coarse, so it doesn't force a redraw every wake
@@ -49,9 +52,9 @@ static void drawSprite(const Sprite& s, int x, int y, int scale, uint32_t color)
   }
 }
 
-static void drawMonster(uint8_t stage, uint8_t face, uint32_t color) {
-  if (stage >= BODY_SPRITES_COUNT) stage = BODY_SPRITES_COUNT - 1;
-  drawSprite(BODY_SPRITES[stage], MONSTER_X, MONSTER_Y, SPRITE_SCALE, color);
+static void drawMonster(uint8_t sprite, uint8_t face, uint32_t color) {
+  if (sprite >= BODY_SPRITES_COUNT) sprite = 0;
+  drawSprite(BODY_SPRITES[sprite], MONSTER_X, MONSTER_Y, SPRITE_SCALE, color);
   if (face < FACE_SPRITES_COUNT) {
     drawSprite(FACE_SPRITES[face], MONSTER_X + FACE_X * SPRITE_SCALE,
                MONSTER_Y + FACE_Y * SPRITE_SCALE, SPRITE_SCALE, color);
@@ -78,7 +81,7 @@ static void render(const RenderModel& m) {
 
   // Header: level + form name, battery.
   char buf[40];
-  snprintf(buf, sizeof(buf), "LV%u %s", m.level, stageName(m.stage));
+  snprintf(buf, sizeof(buf), "LV%u %s", m.level, formName(m.form));
   canvas.setTextDatum(top_left);
   canvas.drawString(buf, 4, 1);
   snprintf(buf, sizeof(buf), "%u%%", m.battery);
@@ -86,7 +89,20 @@ static void render(const RenderModel& m) {
   canvas.drawString(buf, W - 4, 1);
   canvas.drawFastHLine(0, 18, W, TFT_BLACK);
 
-  drawMonster(m.stage, m.face, TFT_BLACK);
+  drawMonster(m.sprite, m.face, TFT_BLACK);
+
+  // Left margin: what it is about to become (top) and its scars (bottom).
+  if (m.teaser < BODY_SPRITES_COUNT) {
+    drawSprite(BODY_SPRITES[m.teaser], 2, MONSTER_Y + 1, 1, TFT_BLACK);
+    canvas.setTextDatum(top_center);
+    canvas.drawString("???", 18, MONSTER_Y + 34);
+  }
+  for (uint8_t i = 0; i < m.scars; i++) {
+    int x = 8 + (i % 2) * 12;
+    int y = MONSTER_Y + 86 + (i / 2) * 8;
+    canvas.drawLine(x, y, x + 5, y + 5, TFT_BLACK);
+    canvas.drawLine(x + 5, y, x, y + 5, TFT_BLACK);
+  }
 
   if (m.ready) {
     // Evolution prompt: exclamation marks either side of the monster.
@@ -167,7 +183,7 @@ void uiEvolve(const RenderModel& before, const RenderModel& after) {
   push(epd_mode_t::epd_quality);
 
   canvas.fillScreen(TFT_BLACK);
-  drawMonster(after.stage, 0xFF, TFT_WHITE);  // silhouette of the new form
+  drawMonster(after.sprite, 0xFF, TFT_WHITE);  // silhouette of the new form
   push(epd_mode_t::epd_quality);
 
   canvas.fillScreen(TFT_WHITE);

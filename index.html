@@ -58,6 +58,25 @@
     .stat { border-top: 1px solid var(--line); padding-top: 8px; }
     .stat dt { color: var(--muted); font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
     .stat dd { margin: 2px 0 0; font-size: 1.15rem; font-weight: 700; overflow-wrap: anywhere; }
+    .path { text-align: center; color: var(--muted); font-size: .8rem; margin: -8px 0 16px; overflow-wrap: anywhere; }
+    .path b { color: var(--ink); }
+    .note { text-align: center; font-size: .8rem; margin: -10px 0 16px; }
+    .note.hidden { display: none; }
+    .diet { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 8px; }
+    .diet h2 { color: var(--muted); font-size: .75rem; font-weight: 400; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 6px; }
+    .dietbar { display: flex; gap: 2px; height: 18px; }
+    .dietbar > div { min-width: 4px; border: 2px solid var(--ink); }
+    .dietbar > div:first-child { border-radius: 4px 0 0 4px; }
+    .dietbar > div:last-child { border-radius: 0 4px 4px 0; }
+    .dietbar .empty { flex: 1; border-style: dashed; border-color: var(--line); border-radius: 4px; }
+    .k-ap { background: var(--ink); }
+    .k-ble { background: repeating-linear-gradient(45deg, var(--ink) 0 2px, transparent 2px 6px); }
+    .k-client { background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 6px); }
+    .k-wearable { background: radial-gradient(var(--ink) 1.2px, transparent 1.6px) 0 0 / 5px 5px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-size: .8rem; }
+    .legend li { display: flex; align-items: center; gap: 6px; }
+    .legend i { width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 3px; display: inline-block; }
+    .legend span { color: var(--muted); }
     .foot { color: var(--muted); font-size: .8rem; margin-top: 16px; }
     .error { color: #b3261e; }
   </style>
@@ -78,6 +97,8 @@
       </div>
 
       <canvas id="monster" width="32" height="32" aria-label="The monster"></canvas>
+      <p class="note hidden" id="condition"></p>
+      <p class="path" id="path"></p>
 
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="barwrap"><div id="bar"></div></div>
       <div class="xp"><span id="xp"></span><span class="combo" id="combo"></span></div>
@@ -89,7 +110,15 @@
         <div class="stat"><dt>Last forage</dt><dd id="lastForage">&ndash;</dd></div>
         <div class="stat"><dt>Forage cycles</dt><dd id="cycles">&ndash;</dd></div>
         <div class="stat"><dt>Battery</dt><dd id="battery">&ndash;</dd></div>
+        <div class="stat"><dt>Frenzies</dt><dd id="frenzies">&ndash;</dd></div>
+        <div class="stat"><dt>Scars</dt><dd id="scars">&ndash;</dd></div>
       </dl>
+
+      <div class="diet">
+        <h2>Diet</h2>
+        <div class="dietbar" id="dietbar" role="img" aria-label="Diet"></div>
+        <ul class="legend" id="legend"></ul>
+      </div>
     </section>
 
     <p class="foot" id="synced"></p>
