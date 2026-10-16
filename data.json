@@ -1,8 +1,8 @@
 {
   "Level": 1,
-  "Total_XP": 30,
-  "Last_Fed_Timestamp": "2026-10-16T08:01:36Z",
-  "Total_Devices_Eaten": 13,
+  "Total_XP": 39,
+  "Last_Fed_Timestamp": "2026-10-16T09:10:09Z",
+  "Total_Devices_Eaten": 20,
   "form": "egg",
   "form_name": "Egg",
   "sprite": 0,
@@ -11,26 +11,27 @@
     "Egg"
   ],
   "diet": {
-    "wifi_ap": 7,
-    "wifi_client": 0,
-    "ble": 6,
+    "wifi_ap": 9,
+    "wifi_client": 1,
+    "ble": 10,
     "wearable": 0
   },
   "scars": 0,
   "frenzies": 0,
+  "regulars": 0,
   "level_xp": 0,
   "next_level_xp": 100,
   "ready_to_evolve": false,
-  "mood": "feeding",
-  "face": 1,
+  "mood": "sleeping",
+  "face": 4,
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 13,
-    "xp_gained": 30,
-    "combo": 1.5
+    "new_devices": 2,
+    "xp_gained": 3,
+    "combo": 1
   },
-  "forage_cycles": 1,
+  "forage_cycles": 7,
   "battery": 100,
-  "synced_at": "2026-10-16T08:01:36Z"
+  "synced_at": "2026-10-16T09:10:09Z"
 }
