@@ -1,8 +1,8 @@
 {
   "Level": 21,
-  "Total_XP": 23792,
-  "Last_Fed_Timestamp": "2026-10-16T04:35:49Z",
-  "Total_Devices_Eaten": 8936,
+  "Total_XP": 23897,
+  "Last_Fed_Timestamp": "2026-10-16T05:37:49Z",
+  "Total_Devices_Eaten": 9007,
   "stage": 4,
   "stage_name": "Ether Wyrm",
   "level_xp": 21000,
@@ -13,11 +13,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 11,
-    "xp_gained": 16,
+    "new_devices": 13,
+    "xp_gained": 19,
     "combo": 1.5
   },
-  "forage_cycles": 364,
+  "forage_cycles": 370,
   "battery": 100,
-  "synced_at": "2026-10-16T04:35:49Z"
+  "synced_at": "2026-10-16T05:37:49Z"
 }
