@@ -1,8 +1,8 @@
 {
   "Level": 3,
-  "Total_XP": 493,
-  "Last_Fed_Timestamp": "2026-10-16T20:37:23Z",
-  "Total_Devices_Eaten": 296,
+  "Total_XP": 506,
+  "Last_Fed_Timestamp": "2026-10-16T21:31:23Z",
+  "Total_Devices_Eaten": 309,
   "form": "static_blob",
   "form_name": "Static Blob",
   "sprite": 1,
@@ -13,8 +13,8 @@
   ],
   "diet": {
     "wifi_ap": 60,
-    "wifi_client": 22,
-    "ble": 214,
+    "wifi_client": 23,
+    "ble": 226,
     "wearable": 0
   },
   "scars": 0,
@@ -28,11 +28,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 2,
-    "xp_gained": 2,
+    "new_devices": 1,
+    "xp_gained": 1,
     "combo": 1
   },
-  "forage_cycles": 82,
-  "battery": 88,
-  "synced_at": "2026-10-16T20:37:23Z"
+  "forage_cycles": 88,
+  "battery": 84,
+  "synced_at": "2026-10-16T21:31:23Z"
 }
