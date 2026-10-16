@@ -1,23 +1,36 @@
 {
-  "Level": 22,
-  "Total_XP": 24091,
-  "Last_Fed_Timestamp": "2026-10-16T07:01:22Z",
-  "Total_Devices_Eaten": 9124,
-  "stage": 4,
-  "stage_name": "Ether Wyrm",
-  "level_xp": 23100,
-  "next_level_xp": 25300,
+  "Level": 1,
+  "Total_XP": 30,
+  "Last_Fed_Timestamp": "2026-10-16T08:01:36Z",
+  "Total_Devices_Eaten": 13,
+  "form": "egg",
+  "form_name": "Egg",
+  "sprite": 0,
+  "tier": 0,
+  "path": [
+    "Egg"
+  ],
+  "diet": {
+    "wifi_ap": 7,
+    "wifi_client": 0,
+    "ble": 6,
+    "wearable": 0
+  },
+  "scars": 0,
+  "frenzies": 0,
+  "level_xp": 0,
+  "next_level_xp": 100,
   "ready_to_evolve": false,
   "mood": "feeding",
   "face": 1,
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 18,
-    "xp_gained": 36,
-    "combo": 2
+    "new_devices": 13,
+    "xp_gained": 30,
+    "combo": 1.5
   },
-  "forage_cycles": 379,
+  "forage_cycles": 1,
   "battery": 100,
-  "synced_at": "2026-10-16T07:01:22Z"
+  "synced_at": "2026-10-16T08:01:36Z"
 }
