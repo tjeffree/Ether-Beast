@@ -80,6 +80,7 @@
     renderDiet(d.diet || {});
     $('frenzies').textContent = (d.frenzies || 0).toLocaleString();
     $('scars').textContent = (d.scars || 0).toLocaleString();
+    $('regulars').textContent = (d.regulars || 0).toLocaleString();
 
     const floor = d.level_xp || 0;
     const next = d.next_level_xp || 1;

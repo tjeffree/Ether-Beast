@@ -20,6 +20,7 @@
 #include "seen_filter.h"
 #include "forage.h"
 #include "github_sync.h"
+#include "regulars.h"
 #include "ui.h"
 
 static const gpio_num_t POWER_HOLD_PIN   = GPIO_NUM_12;  // high keeps the CoreInk powered
@@ -71,12 +72,18 @@ static void forageCycle() {
 
   seen.load();
   if (seen.digestIfFull()) state.digestions++;
+  if (!regularsBegin()) Serial.println("LittleFS mount failed: regulars not tracked");
 
-  // Pass 1: base XP for devices never eaten before.
+  // Pass 1: base XP for devices never eaten before. Regulars are never eaten.
   uint32_t baseXp = 0;
   uint16_t newDevices = 0;
   uint16_t newByKind[4] = {};
+  uint16_t regularsHeard = 0;
   for (uint16_t i = 0; i < foraged.count; i++) {
+    if (isRegular(foraged.items[i].hash)) {
+      regularsHeard++;
+      continue;
+    }
     if (seen.eat(foraged.items[i].hash)) {
       newDevices++;
       newByKind[foraged.items[i].kind]++;
@@ -110,6 +117,10 @@ static void forageCycle() {
 
   state.cycles++;
   state.cyclesSinceSync++;
+  uint16_t promoted = regularsTrack(foraged, state.cycles, nowEpoch());
+  regularsSave();
+  Serial.printf("Regulars: %u heard, %u new, %u known, %u on a streak\n", regularsHeard, promoted,
+                regularsCount(), regularsCandidates());
   state.totalXp += gain;
   state.devicesEaten += newDevices;
   state.lastNewDevices = newDevices;
@@ -253,6 +264,7 @@ void setup() {
     // device the previous beast ate so the new one starts hungry.
     seen.clear();
     seen.save();
+    regularsClear();
     show(uiModelFrom(state, FACE_NORMAL, STATUS_HATCHED, batteryLevel()), true);
   } else if (timerWake) {
     forageCycle();

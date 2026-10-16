@@ -6,7 +6,8 @@ before. New devices become XP; enough XP and the monster is ready to evolve. Whe
 your home Wi-Fi it uploads its state here, and the GitHub Pages dashboard shows it.
 
 **Privacy:** the device only listens; it never transmits during a forage. Device addresses
-are reduced straight away to a salted hash and stored only as bits in a Bloom filter. The
+are reduced straight away to a salted hash and stored only as bits in a Bloom filter
+(plus, for *regulars*, the salted hash itself). The
 salt is random, never leaves the device, and no addresses are uploaded. Only the monster's
 stats go to GitHub.
 
@@ -25,6 +26,11 @@ an hour of *Sugar Rush*.
 Only devices with a stable address count. Phones, watches and earbuds mostly advertise
 from random addresses that change every few minutes (and probe for Wi-Fi from randomised
 MACs), so those are skipped rather than eaten again and again.
+
+**Regulars:** a device heard in every forage for 3 hours (missing at most one forage in
+a row) becomes a *regular* and is never eaten again, even after the seen-device memory
+is cleared. Your home's and office's devices, and the ones you carry with you, end up
+here. Regulars are kept as salted hashes in LittleFS on the spare `spiffs` partition.
 
 Reaching level L takes `50 * L * (L-1)` total XP.
 

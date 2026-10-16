@@ -2,6 +2,7 @@
 #include "config.h"
 #include "certs.h"
 #include "forage.h"
+#include "regulars.h"
 #include "secrets.h"
 #include <M5Unified.h>
 #include <WiFi.h>
@@ -63,6 +64,7 @@ String buildStatePayload(const GameState& s, uint8_t face, uint8_t battery) {
   diet["wearable"] = s.eatenByKind[KIND_BLE_WEARABLE];
   doc["scars"] = s.digestions;
   doc["frenzies"] = s.frenzies;
+  doc["regulars"] = regularsCount();
   doc["level_xp"] = xpForLevel(s.level);
   doc["next_level_xp"] = xpForLevel(s.level + 1);
   doc["ready_to_evolve"] = (bool)s.readyToEvolve;

@@ -51,6 +51,12 @@
 #define SEEN_FILTER_CAPACITY    3500    // ~1% false positives; beyond this it is "digested" (cleared)
 #define MAX_SIGHTINGS           512     // unique devices held in RAM per forage
 
+// ---- Regulars (never eaten again) -----------------------------------------
+#define REGULAR_AFTER_SEC       (3UL * 3600UL)  // heard in every forage for this long...
+#define REGULAR_MAX_MISSED      1       // ...allowing this many missed forages in a row
+#define MAX_CANDIDATES          512     // devices on a streak
+#define MAX_REGULARS            2048    // 16 KB in LittleFS
+
 // ---- Display ----------------------------------------------------------------
 #define FULL_REFRESH_EVERY      6       // full (flashing) refresh every Nth update, partial otherwise
 #define SPRITE_SCALE            4       // 32x32 art -> 128x128 on screen
