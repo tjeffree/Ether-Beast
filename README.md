@@ -69,6 +69,9 @@ Moods: *starving* after 24h with no new devices, *feeding* after a forage with m
 ## Buttons
 
 The CoreInk is fully **powered off** between forages; the RTC alarm turns it back on.
+It also wakes for a second or two each minute, radios off, to thicken the next of the
+ten dashes under the header: a countdown to the next forage, which shows "FORAGING..."
+while it listens.
 
 - **Side power button**: wake it up. It shows the status screen for a few seconds.
 - **Top button** (while awake, when "PRESS TOP BTN" shows): evolve.

@@ -2,8 +2,9 @@
 //
 // Each boot is one short life cycle:
 //   RTC alarm   -> forage (passive BLE + Wi-Fi listen), feed, maybe sync, redraw
+//                  or, between forages, just fill the next countdown notch
 //   button/USB  -> status screen; top button evolves, wheel press forages now
-// then power off until the RTC alarm brings it back (FORAGE_INTERVAL_SEC).
+// then power off until the RTC alarm brings it back at the next minute (TICK_SEC).
 
 #include <M5Unified.h>
 #include <WiFi.h>
@@ -31,16 +32,41 @@ static SeenFilter   seen;
 static ForageResult foraged;
 static RenderModel  onScreen;      // what the panel currently shows
 static bool         haveOnScreen = false;
+static uint32_t     cycleStart;    // RTC seconds when the current forage cycle began
+static bool         haveCycleStart = false;
+static bool         newCycle = false;  // this boot foraged (or hatched): restart the countdown
+
+static const uint32_t TICK_EARLY_SEC = 5;  // an RTC alarm a little early still counts as on time
 
 static uint8_t batteryLevel() {
   int32_t b = M5.Power.getBatteryLevel();
   return b < 0 ? 0 : (b > 100 ? 100 : b);
 }
 
-static void show(const RenderModel& m, bool force = false) {
+// Seconds into the current forage cycle, or -1 if unknown (first boot, clock jumped).
+static int32_t cycleElapsed() {
+  if (!haveCycleStart) return -1;
+  int64_t e = (int64_t)time(nullptr) - cycleStart;
+  return e < 0 || e > 2 * FORAGE_INTERVAL_SEC ? -1 : (int32_t)e;
+}
+
+// Minutes started so far this cycle; TICK_NOTCHES or more means a forage is due.
+static uint32_t cycleMinute(int32_t elapsed) {
+  return (elapsed + TICK_EARLY_SEC) / TICK_SEC;
+}
+
+// Notches to show: the minute in progress included, so all of them in the last minute.
+static uint8_t currentTicks() {
+  int32_t e = cycleElapsed();
+  if (e < 0) return 1;
+  uint32_t n = cycleMinute(e) + 1;
+  return n > TICK_NOTCHES ? TICK_NOTCHES : n;
+}
+
+static void show(const RenderModel& m, uint8_t ticks, bool force = false) {
   if (!force && haveOnScreen && memcmp(&m, &onScreen, sizeof(m)) == 0) return;
   bool full = !haveOnScreen || state.displayCount % FULL_REFRESH_EVERY == 0;
-  uiShow(m, haveOnScreen ? &onScreen : nullptr, full);
+  uiShow(m, haveOnScreen ? &onScreen : nullptr, full, ticks);
   state.displayCount++;
   onScreen = m;
   haveOnScreen = true;
@@ -62,6 +88,10 @@ static float comboMultiplier(uint16_t newDevices) {
 }
 
 static void forageCycle() {
+  newCycle = true;
+  // Before the radios start: the beast, the countdown full, and what it's doing.
+  show(uiModelFrom(state, faceFor(state, false), STATUS_FORAGING, batteryLevel()), TICK_NOTCHES,
+       true);
   memset(&foraged, 0, sizeof(foraged));
   uint32_t t0 = millis();
   forageBle(foraged);
@@ -169,7 +199,8 @@ static void forageCycle() {
     if (state.lastSyncOk == 1) { status = STATUS_SYNCED; sleeping = true; }
     else if (state.lastSyncOk == 2) status = STATUS_SYNC_FAILED;
   }
-  show(uiModelFrom(state, faceFor(state, sleeping), status, batteryLevel()));
+  // Always redraw: the countdown restarts, and ticks only ever add notches.
+  show(uiModelFrom(state, faceFor(state, sleeping), status, batteryLevel()), 1, true);
 }
 
 static void evolve() {
@@ -180,7 +211,7 @@ static void evolve() {
   checkEvolveReady(state);
   RenderModel after = uiModelFrom(state, FACE_HAPPY, STATUS_EVOLVED, batteryLevel());
   Serial.printf("Evolved to level %u (%s)\n", state.level, formName(after.form));
-  uiEvolve(before, after);
+  uiEvolve(before, after, currentTicks());
   state.displayCount++;
   onScreen = after;
   uiSaveLast(after);
@@ -188,7 +219,7 @@ static void evolve() {
 
 static void buttonWake() {
   M5.Power.setLed(255);
-  show(uiModelFrom(state, faceFor(state, false), idleStatus(), batteryLevel()));
+  show(uiModelFrom(state, faceFor(state, false), idleStatus(), batteryLevel()), currentTicks());
   M5.Power.setLed(0);
 
   uint32_t awakeMs = state.readyToEvolve ? EVOLVE_WAIT_MS : BUTTON_WAKE_AWAKE_MS;
@@ -211,14 +242,14 @@ static void buttonWake() {
 enum : uint32_t { WAKE_HINT_NONE = 0, WAKE_HINT_TIMER = 0x7133E701, WAKE_HINT_BUTTON = 0x7133E702 };
 RTC_NOINIT_ATTR static uint32_t wakeHint;
 
-static void sleepUntilNextForage() {
-  stateSave(state);
-  Serial.printf("Sleeping %us\n", FORAGE_INTERVAL_SEC);
+// Powers off (battery) or light-sleeps (USB) for `seconds`, then boots afresh.
+static void sleepFor(uint32_t seconds) {
+  Serial.printf("Sleeping %lus\n", (unsigned long)seconds);
   Serial.flush();
 
   M5.Rtc.disableIRQ();
   M5.Rtc.clearIRQ();
-  M5.Rtc.setAlarmIRQ(FORAGE_INTERVAL_SEC);
+  M5.Rtc.setAlarmIRQ(seconds);
   M5.Display.sleep();
   M5.Display.waitDisplay();
 
@@ -229,7 +260,7 @@ static void sleepUntilNextForage() {
 
   // Still running, so USB is powering us: light-sleep until the timer or the
   // side power button, then restart to begin a fresh cycle.
-  esp_sleep_enable_timer_wakeup((uint64_t)FORAGE_INTERVAL_SEC * 1000000ULL);
+  esp_sleep_enable_timer_wakeup((uint64_t)seconds * 1000000ULL);
   gpio_wakeup_enable(POWER_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
   esp_sleep_enable_gpio_wakeup();
   esp_light_sleep_start();
@@ -238,12 +269,38 @@ static void sleepUntilNextForage() {
   esp_restart();
 }
 
+// Until the next minute boundary of the current cycle (the last one is the forage).
+static uint32_t secondsToNextTick(int32_t elapsed) {
+  return (cycleMinute(elapsed) + 1) * TICK_SEC - elapsed;
+}
+
+static void sleepUntilNextTick() {
+  stateSave(state);
+  int32_t e = cycleElapsed();
+  if (newCycle || e < 0) {
+    cycleStart = (uint32_t)time(nullptr);
+    haveCycleStart = true;
+    uiSaveCycleStart(cycleStart);
+    e = 0;
+  }
+  sleepFor(secondsToNextTick(e));
+}
+
+// A minute between forages: fill the next notch and power straight off again,
+// with no radios and nothing written to flash.
+static void tick(int32_t elapsed) {
+  uint8_t ticks = currentTicks();
+  Serial.printf("\nEther-Beast: tick %u/%u\n", ticks, TICK_NOTCHES);
+  uiTick(onScreen, ticks);
+  sleepFor(secondsToNextTick(elapsed));
+}
+
 void setup() {
   auto cfg = M5.config();
   cfg.clear_display = false;    // the e-ink keeps the last frame; don't flash it white
   cfg.disable_rtc_irq = false;  // we need the alarm flag to know why we woke
   cfg.serial_baudrate = 115200;
-  M5.begin(cfg);
+  M5.begin(cfg);  // also sets the system clock from the RTC
 
   // Battery: the RTC alarm powered us on. USB: the light sleep ended on its timer.
   bool restarted = esp_reset_reason() == ESP_RST_SW;
@@ -253,8 +310,14 @@ void setup() {
   M5.Rtc.clearIRQ();
 
   uiBegin();
-  seenSaltInit();
   haveOnScreen = uiLoadLast(onScreen);
+  haveCycleStart = uiLoadCycleStart(cycleStart);
+  int32_t elapsed = cycleElapsed();
+  if (timerWake && haveOnScreen && elapsed >= 0 && cycleMinute(elapsed) < TICK_NOTCHES) {
+    tick(elapsed);  // does not return
+  }
+
+  seenSaltInit();
   bool existing = stateLoad(state);
   Serial.printf("\nEther-Beast: %s wake, level %u, %lu XP\n", timerWake ? "timer" : "button",
                 state.level, (unsigned long)state.totalXp);
@@ -265,13 +328,14 @@ void setup() {
     seen.clear();
     seen.save();
     regularsClear();
-    show(uiModelFrom(state, FACE_NORMAL, STATUS_HATCHED, batteryLevel()), true);
+    newCycle = true;
+    show(uiModelFrom(state, FACE_NORMAL, STATUS_HATCHED, batteryLevel()), 1, true);
   } else if (timerWake) {
     forageCycle();
   } else {
     buttonWake();
   }
-  sleepUntilNextForage();
+  sleepUntilNextTick();
 }
 
 void loop() {

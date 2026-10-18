@@ -2,6 +2,8 @@
 
 // ---- Schedule -------------------------------------------------------------
 #define FORAGE_INTERVAL_SEC     600     // RTC wakes the beast every 10 minutes
+#define TICK_SEC                60      // ...and briefly each minute between to fill a countdown notch
+#define TICK_NOTCHES            (FORAGE_INTERVAL_SEC / TICK_SEC)
 #define BLE_SCAN_SEC            8       // passive BLE listen
 #define WIFI_CHANNEL_FIRST      1
 #define WIFI_CHANNEL_LAST       13      // UK/EU channels 1-13

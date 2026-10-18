@@ -4,7 +4,7 @@
 
 enum StatusLine : uint8_t {
   STATUS_NONE, STATUS_READY, STATUS_SYNCED, STATUS_SYNC_FAILED,
-  STATUS_STARVING, STATUS_SUGAR, STATUS_EVOLVED, STATUS_HATCHED,
+  STATUS_STARVING, STATUS_SUGAR, STATUS_EVOLVED, STATUS_HATCHED, STATUS_FORAGING,
 };
 
 // Everything the screen shows. Saved after each update so the next boot can
@@ -34,9 +34,15 @@ RenderModel uiModelFrom(const GameState& s, uint8_t face, uint8_t status, uint8_
 
 void uiBegin();
 bool uiLoadLast(RenderModel& m);
-// Draws `m`. Partial refreshes first replay `prev` so the panel's
-// differential update knows what is really on the glass after a power-off.
-void uiShow(const RenderModel& m, const RenderModel* prev, bool fullRefresh);
+// Draws `m` with `ticks` countdown notches filled. On the M09 panel, partial
+// refreshes first replay `prev` so the panel's differential update knows what
+// is really on the glass after a power-off.
+void uiShow(const RenderModel& m, const RenderModel* prev, bool fullRefresh, uint8_t ticks);
+// Fills countdown notches over `m`, which must already be on the glass.
+void uiTick(const RenderModel& m, uint8_t ticks);
 // Multi-stage full-refresh evolution animation, ending on `after`.
-void uiEvolve(const RenderModel& before, const RenderModel& after);
+void uiEvolve(const RenderModel& before, const RenderModel& after, uint8_t ticks);
 void uiSaveLast(const RenderModel& m);
+// When the current forage cycle began (RTC seconds), so ticks can save nothing.
+bool uiLoadCycleStart(uint32_t& t);
+void uiSaveCycleStart(uint32_t t);

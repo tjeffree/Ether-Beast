@@ -2,6 +2,7 @@
 #include "config.h"
 #include "sprites.h"
 #include <M5Unified.h>
+#include <lgfx/v1/panel/Panel_GDEW0154D67.hpp>
 #include <Preferences.h>
 
 static M5Canvas canvas(&M5.Display);
@@ -34,7 +35,14 @@ RenderModel uiModelFrom(const GameState& s, uint8_t face, uint8_t status, uint8_
   return m;
 }
 
+// CoreInks ship with one of two e-papers, and M5GFX picks the driver at boot.
+// The GDEW0154D67's driver resyncs its two frame buffers on the first update
+// after power-on (an inverted flash), so it needs no replay; the M09 does.
+static bool panelD67 = false;
+
 void uiBegin() {
+  lgfx::Panel_GDEW0154D67 d67;  // compared by vtable: no RTTI on this core
+  panelD67 = *(void**)M5.Display.getPanel() == *(void**)&d67;
   M5.Display.setAutoDisplay(false);
   canvas.setColorDepth(1);
   canvas.createSprite(W, H);
@@ -70,11 +78,24 @@ static const char* statusText(uint8_t status) {
     case STATUS_SUGAR:       return "SUGAR RUSH!";
     case STATUS_EVOLVED:     return "EVOLVED!";
     case STATUS_HATCHED:     return "hatched!";
+    case STATUS_FORAGING:    return "FORAGING...";
     default:                 return "";
   }
 }
 
-static void render(const RenderModel& m) {
+// Header rule doubling as the countdown to the next forage: one dash per
+// minute, thickening as each minute starts. A filled notch covers its thin
+// dash, so adding notches only ever turns pixels black.
+static void drawCountdown(uint8_t ticks) {
+  const int pitch = W / TICK_NOTCHES;
+  for (int i = 0; i < TICK_NOTCHES; i++) {
+    int x = i * pitch + 1;
+    if (i < ticks) canvas.fillRect(x, 17, pitch - 2, 4, TFT_BLACK);
+    else canvas.drawFastHLine(x, 18, pitch - 2, TFT_BLACK);
+  }
+}
+
+static void render(const RenderModel& m, uint8_t ticks) {
   canvas.fillScreen(TFT_WHITE);
   canvas.setTextColor(TFT_BLACK);
   canvas.setFont(&fonts::Font2);
@@ -87,7 +108,7 @@ static void render(const RenderModel& m) {
   snprintf(buf, sizeof(buf), "%u%%", m.battery);
   canvas.setTextDatum(top_right);
   canvas.drawString(buf, W - 4, 1);
-  canvas.drawFastHLine(0, 18, W, TFT_BLACK);
+  drawCountdown(ticks);
 
   drawMonster(m.sprite, m.face, TFT_BLACK);
 
@@ -160,20 +181,27 @@ static void push(epd_mode_t mode) {
   M5.Display.waitDisplay();
 }
 
-void uiShow(const RenderModel& m, const RenderModel* prev, bool fullRefresh) {
-  if (!fullRefresh && prev && prev->valid) {
-    // After power-off the driver assumes a blank panel. Replaying the old
-    // frame (no visible change) makes the next partial update diff correctly.
-    render(*prev);
+void uiShow(const RenderModel& m, const RenderModel* prev, bool fullRefresh, uint8_t ticks) {
+  if (!fullRefresh && prev && prev->valid && !panelD67) {
+    // GDEW0154M09: after power-off the driver assumes a blank panel. Replaying
+    // the old frame (no visible change) makes the next partial update diff
+    // correctly. Ticks aren't saved, so replay every notch filled: a superset
+    // of the glass. (The D67 driver handles a cold start itself.)
+    render(*prev, TICK_NOTCHES);
     push(epd_mode_t::epd_fastest);
   }
-  render(m);
+  render(m, ticks);
   push(fullRefresh ? epd_mode_t::epd_quality : epd_mode_t::epd_fast);
 }
 
-void uiEvolve(const RenderModel& before, const RenderModel& after) {
+void uiTick(const RenderModel& m, uint8_t ticks) {
+  render(m, ticks);
+  push(epd_mode_t::epd_fast);
+}
+
+void uiEvolve(const RenderModel& before, const RenderModel& after, uint8_t ticks) {
   // Each step is a full refresh, which also scrubs any ghosting.
-  render(before);
+  render(before, ticks);
   canvas.setFont(&fonts::FreeSansBold18pt7b);
   canvas.setTextDatum(middle_center);
   canvas.drawString("?!", W - 22, 40);
@@ -189,7 +217,7 @@ void uiEvolve(const RenderModel& before, const RenderModel& after) {
   canvas.fillScreen(TFT_WHITE);
   push(epd_mode_t::epd_quality);
 
-  render(after);
+  render(after, ticks);
   push(epd_mode_t::epd_quality);
 }
 
@@ -205,5 +233,21 @@ void uiSaveLast(const RenderModel& m) {
   Preferences p;
   p.begin("ui", false);
   p.putBytes("last", &m, sizeof(m));
+  p.end();
+}
+
+bool uiLoadCycleStart(uint32_t& t) {
+  Preferences p;
+  p.begin("ui", true);
+  bool ok = p.isKey("cycle");
+  t = p.getUInt("cycle", 0);
+  p.end();
+  return ok;
+}
+
+void uiSaveCycleStart(uint32_t t) {
+  Preferences p;
+  p.begin("ui", false);
+  p.putUInt("cycle", t);
   p.end();
 }
