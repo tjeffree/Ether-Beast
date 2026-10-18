@@ -20,11 +20,18 @@
     ctx.fillStyle = ink;
     const sprites = window.ETHER_SPRITES;
     if (!sprites) return;
+    // Rows are shade digits 0 (paper, transparent) to 4 (ink); greys draw as part-opaque ink.
     const plot = (rows, ox, oy) => rows.forEach((row, y) => {
-      for (let x = 0; x < row.length; x++) if (row[x] === '#') ctx.fillRect(ox + x, oy + y, 1, 1);
+      for (let x = 0; x < row.length; x++) {
+        const shade = +row[x];
+        if (!shade) continue;
+        ctx.globalAlpha = shade / 4;
+        ctx.fillRect(ox + x, oy + y, 1, 1);
+      }
     });
     plot(sprites.bodies[sprite] || sprites.bodies[0], 0, 0);
     if (sprites.faces[face]) plot(sprites.faces[face], FACE_X, FACE_Y);
+    ctx.globalAlpha = 1;
   }
 
   const KINDS = [

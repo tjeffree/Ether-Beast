@@ -48,24 +48,43 @@ void uiBegin() {
   canvas.createSprite(W, H);
 }
 
-static void drawSprite(const Sprite& s, int x, int y, int scale, uint32_t color) {
-  const int bytesPerRow = (s.w + 7) / 8;
+// 4x4 Bayer matrix. A grey dot is inked where its threshold is below shade * 4 of 16,
+// so ':' '+' '%' come out 25/50/75% black. The pattern is tied to screen position, so
+// neighbouring blocks join up seamlessly and a redraw puts every dot back in place.
+static const uint8_t BAYER[4][4] = {
+  { 0,  8,  2, 10},
+  {12,  4, 14,  6},
+  { 3, 11,  1,  9},
+  {15,  7, 13,  5},
+};
+
+// Shade 0 is transparent. solid draws every non-zero shade as full colour (silhouettes).
+static void drawSprite(const Sprite& s, int x, int y, int scale, uint32_t color, bool solid = false) {
   for (int py = 0; py < s.h; py++) {
     for (int px = 0; px < s.w; px++) {
-      uint8_t b = pgm_read_byte(s.bits + py * bytesPerRow + px / 8);
-      if (b & (0x80 >> (px & 7))) {
-        canvas.fillRect(x + px * scale, y + py * scale, scale, scale, color);
+      uint8_t b = pgm_read_byte(s.shades + (py * s.w + px) / 2);
+      uint8_t shade = (px & 1) ? b & 0x0F : b >> 4;
+      if (shade == 0) continue;
+      int sx = x + px * scale, sy = y + py * scale;
+      if (solid || shade >= 4) {
+        canvas.fillRect(sx, sy, scale, scale, color);
+        continue;
+      }
+      for (int dy = 0; dy < scale; dy++) {
+        for (int dx = 0; dx < scale; dx++) {
+          if (BAYER[(sy + dy) & 3][(sx + dx) & 3] < shade * 4) canvas.drawPixel(sx + dx, sy + dy, color);
+        }
       }
     }
   }
 }
 
-static void drawMonster(uint8_t sprite, uint8_t face, uint32_t color) {
+static void drawMonster(uint8_t sprite, uint8_t face, uint32_t color, bool solid = false) {
   if (sprite >= BODY_SPRITES_COUNT) sprite = 0;
-  drawSprite(BODY_SPRITES[sprite], MONSTER_X, MONSTER_Y, SPRITE_SCALE, color);
+  drawSprite(BODY_SPRITES[sprite], MONSTER_X, MONSTER_Y, SPRITE_SCALE, color, solid);
   if (face < FACE_SPRITES_COUNT) {
     drawSprite(FACE_SPRITES[face], MONSTER_X + FACE_X * SPRITE_SCALE,
-               MONSTER_Y + FACE_Y * SPRITE_SCALE, SPRITE_SCALE, color);
+               MONSTER_Y + FACE_Y * SPRITE_SCALE, SPRITE_SCALE, color, solid);
   }
 }
 
@@ -211,7 +230,7 @@ void uiEvolve(const RenderModel& before, const RenderModel& after, uint8_t ticks
   push(epd_mode_t::epd_quality);
 
   canvas.fillScreen(TFT_BLACK);
-  drawMonster(after.sprite, 0xFF, TFT_WHITE);  // silhouette of the new form
+  drawMonster(after.sprite, 0xFF, TFT_WHITE, true);  // silhouette of the new form
   push(epd_mode_t::epd_quality);
 
   canvas.fillScreen(TFT_WHITE);
