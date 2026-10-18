@@ -1,8 +1,8 @@
 {
   "Level": 5,
-  "Total_XP": 1579,
-  "Last_Fed_Timestamp": "2026-10-18T06:37:23Z",
-  "Total_Devices_Eaten": 859,
+  "Total_XP": 1589,
+  "Last_Fed_Timestamp": "2026-10-18T07:31:23Z",
+  "Total_Devices_Eaten": 868,
   "form": "blue_gremlin",
   "form_name": "Blue Gremlin",
   "sprite": 3,
@@ -13,9 +13,9 @@
     "Blue Gremlin"
   ],
   "diet": {
-    "wifi_ap": 175,
-    "wifi_client": 48,
-    "ble": 635,
+    "wifi_ap": 176,
+    "wifi_client": 49,
+    "ble": 642,
     "wearable": 1
   },
   "scars": 0,
@@ -29,11 +29,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 2,
-    "xp_gained": 2,
+    "new_devices": 3,
+    "xp_gained": 4,
     "combo": 1
   },
-  "forage_cycles": 308,
-  "battery": 48,
-  "synced_at": "2026-10-18T06:37:23Z"
+  "forage_cycles": 314,
+  "battery": 50,
+  "synced_at": "2026-10-18T07:31:23Z"
 }
