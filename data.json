@@ -1,39 +1,40 @@
 {
-  "Level": 9,
-  "Total_XP": 4496,
-  "Last_Fed_Timestamp": "2026-10-19T21:27:55Z",
-  "Total_Devices_Eaten": 1999,
-  "form": "blue_gremlin",
-  "form_name": "Blue Gremlin",
-  "sprite": 3,
-  "tier": 2,
+  "Level": 10,
+  "Total_XP": 4823,
+  "Last_Fed_Timestamp": "2026-10-20T20:40:31Z",
+  "Total_Devices_Eaten": 2084,
+  "form": "router_golem",
+  "form_name": "Router Golem",
+  "sprite": 6,
+  "tier": 3,
   "path": [
     "Egg",
     "Static Blob",
-    "Blue Gremlin"
+    "Blue Gremlin",
+    "Router Golem"
   ],
   "diet": {
-    "wifi_ap": 502,
-    "wifi_client": 129,
-    "ble": 1366,
+    "wifi_ap": 546,
+    "wifi_client": 134,
+    "ble": 1402,
     "wearable": 2
   },
   "scars": 0,
-  "frenzies": 9,
+  "frenzies": 10,
   "regulars": 60,
-  "level_xp": 3600,
-  "next_level_xp": 4500,
+  "level_xp": 4500,
+  "next_level_xp": 5500,
   "ready_to_evolve": false,
-  "mood": "sleeping",
-  "face": 4,
-  "sugar_rush": false,
+  "mood": "sugar_rush",
+  "face": 3,
+  "sugar_rush": true,
   "starving": false,
   "last_forage": {
-    "new_devices": 3,
-    "xp_gained": 4,
+    "new_devices": 2,
+    "xp_gained": 2,
     "combo": 1
   },
-  "forage_cycles": 549,
-  "battery": 0,
-  "synced_at": "2026-10-19T21:27:55Z"
+  "forage_cycles": 556,
+  "battery": 59,
+  "synced_at": "2026-10-20T20:40:31Z"
 }
