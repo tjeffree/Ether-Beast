@@ -1,8 +1,8 @@
 {
   "Level": 14,
-  "Total_XP": 10100,
-  "Last_Fed_Timestamp": "2026-10-27T14:59:10Z",
-  "Total_Devices_Eaten": 4927,
+  "Total_XP": 10110,
+  "Last_Fed_Timestamp": "2026-10-27T15:44:27Z",
+  "Total_Devices_Eaten": 4937,
   "form": "router_golem",
   "form_name": "Router Golem",
   "sprite": 6,
@@ -16,7 +16,7 @@
   "diet": {
     "wifi_ap": 899,
     "wifi_client": 226,
-    "ble": 3800,
+    "ble": 3810,
     "wearable": 2
   },
   "scars": 1,
@@ -30,11 +30,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 4,
-    "xp_gained": 4,
+    "new_devices": 0,
+    "xp_gained": 0,
     "combo": 1
   },
-  "forage_cycles": 1263,
+  "forage_cycles": 1269,
   "battery": 59,
-  "synced_at": "2026-10-27T14:59:10Z"
+  "synced_at": "2026-10-27T15:54:53Z"
 }
