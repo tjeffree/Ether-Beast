@@ -1,30 +1,31 @@
 {
-  "Level": 16,
-  "Total_XP": 13674,
-  "Last_Fed_Timestamp": "2026-11-16T16:31:30Z",
-  "Total_Devices_Eaten": 8236,
-  "form": "router_golem",
-  "form_name": "Router Golem",
-  "sprite": 6,
-  "tier": 3,
+  "Level": 17,
+  "Total_XP": 13681,
+  "Last_Fed_Timestamp": "2026-11-16T16:56:28Z",
+  "Total_Devices_Eaten": 8242,
+  "form": "firewall_drake",
+  "form_name": "Firewall Drake",
+  "sprite": 9,
+  "tier": 4,
   "path": [
     "Egg",
     "Static Blob",
     "Blue Gremlin",
-    "Router Golem"
+    "Router Golem",
+    "Firewall Drake"
   ],
   "diet": {
-    "wifi_ap": 1019,
+    "wifi_ap": 1020,
     "wifi_client": 331,
-    "ble": 6884,
+    "ble": 6889,
     "wearable": 2
   },
   "scars": 2,
   "frenzies": 17,
   "regulars": 75,
-  "level_xp": 12000,
-  "next_level_xp": 13600,
-  "ready_to_evolve": true,
+  "level_xp": 13600,
+  "next_level_xp": 15300,
+  "ready_to_evolve": false,
   "mood": "sleeping",
   "face": 4,
   "sugar_rush": false,
@@ -34,7 +35,7 @@
     "xp_gained": 2,
     "combo": 1
   },
-  "forage_cycles": 3041,
-  "battery": 100,
-  "synced_at": "2026-11-16T16:31:30Z"
+  "forage_cycles": 3044,
+  "battery": 97,
+  "synced_at": "2026-11-16T16:56:28Z"
 }
