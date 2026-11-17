@@ -1,8 +1,8 @@
 {
   "Level": 17,
-  "Total_XP": 13933,
-  "Last_Fed_Timestamp": "2026-11-17T18:54:26Z",
-  "Total_Devices_Eaten": 8483,
+  "Total_XP": 13942,
+  "Last_Fed_Timestamp": "2026-11-17T19:51:05Z",
+  "Total_Devices_Eaten": 8491,
   "form": "firewall_drake",
   "form_name": "Firewall Drake",
   "sprite": 9,
@@ -15,9 +15,9 @@
     "Firewall Drake"
   ],
   "diet": {
-    "wifi_ap": 1031,
+    "wifi_ap": 1032,
     "wifi_client": 342,
-    "ble": 7108,
+    "ble": 7115,
     "wearable": 2
   },
   "scars": 2,
@@ -31,11 +31,11 @@
   "sugar_rush": false,
   "starving": false,
   "last_forage": {
-    "new_devices": 3,
-    "xp_gained": 3,
+    "new_devices": 1,
+    "xp_gained": 1,
     "combo": 1
   },
-  "forage_cycles": 3206,
-  "battery": 51,
-  "synced_at": "2026-11-17T18:54:26Z"
+  "forage_cycles": 3212,
+  "battery": 50,
+  "synced_at": "2026-11-17T19:51:05Z"
 }
